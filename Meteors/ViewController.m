@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "GameScene.h"
+#import "AppDelegate.h"
 
 @implementation ViewController
 
@@ -16,9 +17,11 @@
     [super viewDidLoad];
 
     // Configure the view.
+    AppDelegate *appDelegate = (AppDelegate*)[UIApplication sharedApplication].delegate;
     SKView * skView = (SKView *)self.view;
-    skView.showsFPS = YES;
-    skView.showsNodeCount = YES;
+    skView.showsFPS = NO;
+    skView.showsNodeCount = NO;
+    appDelegate.gameView = skView;
     
     // Create and configure the scene.
     SKScene * scene = [GameScene sceneWithSize:skView.bounds.size];

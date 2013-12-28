@@ -14,8 +14,13 @@
 
 @end
 
-@interface HighScoreView : UIView
+@interface HighScoreView : UIView <UITextFieldDelegate>
 
+@property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+@property (weak, nonatomic) IBOutlet UIButton *restartButton;
+@property (weak, nonatomic) IBOutlet UITextField *nameTextfield;
+
+@property (nonatomic) int score;
 - (IBAction)restartButtonPressed:(id)sender;
 @property (weak, nonatomic) id<HighscoreDelegate> delegate;
 

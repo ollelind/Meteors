@@ -17,6 +17,9 @@
     return self.position.y;
 }
 
+
+- (void)update:(CFTimeInterval)timeSpan{}
+
 - (void)collidedWith:(SKPhysicsBody *)body contact:(SKPhysicsContact *)contact{
     
 }

@@ -12,9 +12,13 @@
 #import "Meteor.h"
 #import "MovingObject.h"
 #import "StartView.h"
+#import "HighscoreClient.h"
 
 #define ACTION_KEY_SPAWN_METEORS @"spawn_meteors"
 #define ACTION_KEY_INCREASE_SCORE @"increase_score"
+
+#define Z_POSITION_HUD 1
+#define ORIGIN_NOT_DEFINED 1337
 
 @implementation GameScene
 
@@ -38,16 +42,18 @@
         
         self.scoreLabel = [SKLabelNode labelNodeWithFontNamed:@"Chalkduster"];
         if(IS_IPHONE){
-            self.scoreLabel.fontSize = 12.0;
+            self.scoreLabel.fontSize = 20.0;
         }else{
-            self.scoreLabel.fontSize = 18.0;
+            self.scoreLabel.fontSize = 30.0;
         }
         
         self.scoreLabel.text = @"Score: 0";
         self.scoreLabel.name = @"scoreNode";
+        self.scoreLabel.fontName = @"Starjedi";
         self.scoreLabel.verticalAlignmentMode = SKLabelVerticalAlignmentModeCenter;
         self.scoreLabel.horizontalAlignmentMode = SKLabelHorizontalAlignmentModeLeft;
-        self.scoreLabel.position = CGPointMake(self.size.width - self.scoreLabel.frame.size.width/2 - 50, self.frame.size.height/20);
+        self.scoreLabel.position = CGPointMake(self.size.width - self.scoreLabel.frame.size.width - 30, self.frame.size.height/20);
+        self.scoreLabel.zPosition = Z_POSITION_HUD;
         [self addChild:self.scoreLabel];
         
         // Game layer
@@ -64,13 +70,12 @@
     return self;
 }
 
--(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-    /* Called when a touch begins */
+/*-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     
     for (UITouch *touch in touches) {
         CGPoint location = [touch locationInNode:self];
     }
-}
+}*/
 
 -(void)update:(CFTimeInterval)currentTime {
     [self.inputHandler update];
@@ -93,27 +98,22 @@
     self.startView.frame = self.frame;
     self.startView.delegate = self;
     [self.view addSubview:self.startView];
+    [self showView:self.startView];
 }
 -(void)showHighscoreView{
     NSArray* highScoreViews = [[NSBundle mainBundle] loadNibNamed:@"HighScoreView" owner:self options:nil];
     self.highscoreView = highScoreViews[0];
-    CGRect frame = self.frame;
-    frame.origin.y -= 500;
-    self.highscoreView.frame = frame;
+    self.highscoreView.frame = self.frame;
     self.highscoreView.delegate = self;
+    self.highscoreView.score = self.score;
     [self.view addSubview:self.highscoreView];
-    [UIView animateWithDuration:1.0 animations:^{
-        CGRect frame = self.highscoreView.frame;
-        frame.origin.y += 500;
-        self.highscoreView.frame = frame;
-    }];
+
+    [self showView:self.highscoreView];
+    self.scoreLabel.hidden = YES;
 }
 -(void)startGamePressed{
-    [UIView animateWithDuration:1.0 animations:^{
-        self.startView.layer.opacity = 0;
-    } completion:^(BOOL finished) {
-        [self.startView removeFromSuperview];
-    }];
+    
+    [self hideView:self.startView];
     
     SKAction *positionShip = [SKAction moveTo:CGPointMake(self.frame.size.width/2, self.frame.size.height/5) duration:50.0];
     positionShip.timingMode = SKActionTimingEaseOut;
@@ -124,6 +124,8 @@
 -(void)startGame{
     self.gameRunning = YES;
     self.score = 0;
+    self.scoreLabel.hidden = NO;
+    self.originY = ORIGIN_NOT_DEFINED;
     [self initMeteors];
     
     SKAction *increaseScore = [SKAction performSelector:@selector(increaseScore) onTarget:self];
@@ -134,13 +136,7 @@
 -(void)restartButtonPressed{
     [self removeActionForKey:ACTION_KEY_SPAWN_METEORS];
     
-    [UIView animateWithDuration:1.0 animations:^{
-        CGRect frame = self.highscoreView.frame;
-        frame.origin.y -= 500;
-        self.highscoreView.frame = frame;
-    } completion:^(BOOL finished) {
-        [self.highscoreView removeFromSuperview];
-    }];
+    [self hideView:self.highscoreView];
     
     self.ship = [[Ship alloc]initWithPosition:CGPointMake(self.frame.size.width/2, 50)];
     self.ship.delegate = self;
@@ -168,8 +164,46 @@
         [self removeActionForKey:ACTION_KEY_INCREASE_SCORE];
         self.gameRunning = NO;
         [self.ship removeFromParent];
+        [[HighscoreClient sharedClient] writeToLocalHighscore:self.score];
         [self showHighscoreView];
     }
+}
+
+#pragma mark -
+#pragma mark View handlers
+-(void)hideView:(UIView *)view{
+    [UIView animateWithDuration:0.07
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:^{
+                         view.transform = CGAffineTransformScale(CGAffineTransformIdentity, 1.1, 1.1);
+                     } completion:^(BOOL finished) {
+                         [UIView animateWithDuration:0.5
+                                               delay:0
+                                             options:UIViewAnimationOptionCurveEaseIn
+                                          animations:^{
+                                              view.transform = CGAffineTransformScale(CGAffineTransformIdentity, 0, 0);
+                                          } completion:^(BOOL finished) {
+                                              [view removeFromSuperview];
+                                          }];
+                     }];
+}
+
+-(void)showView:(UIView *)view{
+    view.transform = CGAffineTransformScale(CGAffineTransformIdentity, 0, 0);
+    [UIView animateWithDuration:0.5
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:^{
+                         view.transform = CGAffineTransformScale(CGAffineTransformIdentity, 1.05, 1.05);
+                     } completion:^(BOOL finished) {
+                         [UIView animateWithDuration:0.07
+                                               delay:0
+                                             options:UIViewAnimationOptionCurveEaseIn
+                                          animations:^{
+                                              view.transform = CGAffineTransformScale(CGAffineTransformIdentity, 1, 1);
+                                          } completion:nil];
+                     }];
 }
 
 #pragma mark -
@@ -214,6 +248,9 @@
 #pragma mark InputDelegate
 
 -(void)accelerometerUpdate:(CGFloat)x y:(CGFloat)y{
+    if(_originY == ORIGIN_NOT_DEFINED){
+        self.originY = y;
+    }
     if(self.gameRunning){
         [self.background tilt:x];
         [self.ship move:x y:y];

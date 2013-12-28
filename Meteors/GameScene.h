@@ -21,6 +21,7 @@
 @property (nonatomic, strong) SKLabelNode *scoreLabel;
 @property (nonatomic, assign) int score;
 @property (nonatomic, assign) BOOL gameRunning;
+@property (nonatomic, assign) double originY;
 
 @property (nonatomic, strong) StartView *startView;
 @property (nonatomic, strong) HighScoreView *highscoreView;

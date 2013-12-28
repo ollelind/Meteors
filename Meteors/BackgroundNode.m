@@ -48,21 +48,21 @@
                                                             color:[SKColor lightGrayColor]
                                                   enableStarLight:NO];
     }else{
-        self.farAwayStars = [self spaceStarEmitterNodeWithBirthRate:16
-                                                              scale:0.25
+        self.farAwayStars = [self spaceStarEmitterNodeWithBirthRate:8
+                                                              scale:0.4
                                                            lifetime:(self.gameBounds.size.height/5)
                                                               speed:-70
                                                               color:[SKColor lightGrayColor]
                                                     enableStarLight:NO];
         
         self.middleStars = [self spaceStarEmitterNodeWithBirthRate:8
-                                                             scale:0.5
+                                                             scale:0.7
                                                           lifetime:(self.gameBounds.size.height/5)
                                                              speed:-100
                                                              color:[SKColor lightGrayColor]
                                                    enableStarLight:NO];
         
-        self.closeStars = [self spaceStarEmitterNodeWithBirthRate:12
+        self.closeStars = [self spaceStarEmitterNodeWithBirthRate:8
                                                             scale:1
                                                          lifetime:(self.gameBounds.size.height/5)
                                                             speed:-120
